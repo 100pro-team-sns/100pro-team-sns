@@ -1,0 +1,13 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+body {
+  font-family: "M PLUS 1p", sans-serif;
+  margin: 2px;
+  font-weight: 500;
+  font-style: normal;
+}
