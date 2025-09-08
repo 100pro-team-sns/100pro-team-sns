@@ -12,7 +12,7 @@ function Login() {
         setError(null);
 
         try {
-            const res = await fetch("http://localhost/api/login", {
+            const res = await fetch("http://localhost:3000/api/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -22,14 +22,15 @@ function Login() {
             const data = await res.json();
 
             if (!res.ok) {
-                setError(data);
+                setError(data.error);
+                return;
             }
 
             const token = data.token;
 
             localStorage.setItem("token", token);
 
-            navigate("/app");
+            navigate("/app", {state: {username}});
         } catch (err: unknown) {
             setError(err.message);
         }

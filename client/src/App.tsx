@@ -11,7 +11,9 @@ let socket: Socket|null = null;
 
 function App() {
     const location = useLocation();
-    const {username, password} = location.state || {};
+    const {username} = location.state || {};
+
+    return <div>ようこそ {username} さん</div>;
 
     socket = io("http://localhost:3000");
 
@@ -21,7 +23,6 @@ function App() {
     });
 
 
-    return <div>ようこそ {username} さん</div>;
 }
 
 export default App
