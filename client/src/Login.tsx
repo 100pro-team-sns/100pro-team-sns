@@ -25,7 +25,7 @@ function Login() {
                 setError(data);
             }
 
-            const token = data.token; // ← サーバーが返すキー名に合わせる
+            const token = data.token;
 
             localStorage.setItem("token", token);
 
