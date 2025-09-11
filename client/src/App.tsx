@@ -13,7 +13,6 @@ function App() {
     const location = useLocation();
     const {username} = location.state || {};
 
-    return <div>ようこそ {username} さん</div>;
 
     socket = io("http://localhost:3000");
 
@@ -22,6 +21,7 @@ function App() {
         console.log(socket.connect());
     });
 
+    return <div>ようこそ {username} さん</div>;
 
 }
 

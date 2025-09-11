@@ -30,8 +30,9 @@ function Login() {
 
             localStorage.setItem("token", token);
 
-            navigate("/app", {state: {username}});
+            navigate("/app", {state: {username, token}});
         } catch (err: unknown) {
+
             setError(err.message);
         }
     };
