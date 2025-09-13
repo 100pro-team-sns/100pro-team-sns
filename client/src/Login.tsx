@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {useNavigate} from "react-router";
 
 function Login() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ function Login() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({username, password}),
+                body: JSON.stringify({email, password}),
             });
             const data = await res.json();
 
@@ -27,10 +27,11 @@ function Login() {
             }
 
             const token = data.token;
+            const userId = data.user.id;
 
             localStorage.setItem("token", token);
 
-            navigate("/app", {state: {username, token}});
+            navigate("/app/app", {state: {userId, token}});
         } catch (err: unknown) {
 
             setError(err.message);
@@ -41,9 +42,9 @@ function Login() {
         <form onSubmit={handleSubmit}>
             <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="ユーザー名"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="メールアドレス"
             />
             <input
                 type="password"

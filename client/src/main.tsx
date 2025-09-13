@@ -4,12 +4,14 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import Introduction from "./Introduction.tsx";
 import Login from "./Login.tsx";
-import App from "./App.tsx";
+import App from "./app/App.tsx";
+import New from "./app/New.tsx";
 
 const router = createBrowserRouter([
     { path: "/", Component: Introduction },
     { path: "/login", Component: Login },
-    { path: "/app", Component: App },
+    { path: "/app/app", Component: App },
+    { path: "/app/new", Component: New },
 ]);
 
 createRoot(document.getElementById("root")!).render(
