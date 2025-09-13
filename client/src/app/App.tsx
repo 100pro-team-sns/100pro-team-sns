@@ -3,7 +3,6 @@ import "./App.css"
 
 import {useLocation} from "react-router";
 
-import React, {useEffect, useState} from "react";
 import {io} from "socket.io-client";
 import {Socket} from "socket.io-client";
 import {useNavigate} from "react-router";
@@ -12,9 +11,9 @@ let socket: Socket|null = null;
 
 function App() {
     const location = useLocation();
-    const {userId = null, token = null, errorMessage = null} = location.state || {};
+    const {userId, token, errorMessage = null} = location.state || {};
 
-    if (userId === null || token === null) {
+    if (userId === undefined || token === undefined) {
         useNavigate()("/login");
         return (<p>redirecting to login page</p>)
     }
