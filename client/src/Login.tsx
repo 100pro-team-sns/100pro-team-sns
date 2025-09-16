@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router";
+import socket from "./app/socket.ts";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ function Login() {
         setError(null);
 
         try {
-            const res = await fetch("http://localhost:3000/api/login", {
+            const res = await fetch(import.meta.env.SOCKET_IO_URI + "/api/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -30,10 +31,28 @@ function Login() {
             const userId = data.user.id;
 
             localStorage.setItem("token", token);
+            localStorage.setItem("userId", userId);
 
-            navigate("/app/app", {state: {userId, token}});
+            if (socket)  {
+                socket.removeAllListeners();
+                socket.disconnect();
+            }
+
+            socket.auth = {token}
+            socket.connect()
+
+            const handleConnect = () => {
+                console.log("サーバとの接続確認：", socket?.id);
+            };
+            const handleError = (error: any) => {
+                console.error(error);
+            };
+
+            socket.on("connect", handleConnect);
+            socket.on("error", handleError);
+
+            navigate("/app/home");
         } catch (err: unknown) {
-
             setError(err.message);
         }
     };
