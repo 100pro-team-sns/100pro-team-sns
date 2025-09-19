@@ -13,7 +13,7 @@ function Login() {
         setError(null);
 
         try {
-            const res = await fetch(import.meta.env.SOCKET_IO_URI + "/api/login", {
+            const res = await fetch(import.meta.env.VITE_SOCKET_IO_URI + "/api/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

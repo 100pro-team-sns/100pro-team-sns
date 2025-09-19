@@ -24,7 +24,7 @@ function Chat() {
                 return () => {};
             }
             try {
-                const chatHistoryResponse = await fetch(import.meta.env.SOCKET_IO_URI + "/api/rooms/" + roomId + "/chats", {
+                const chatHistoryResponse = await fetch(import.meta.env.VITE_SOCKET_IO_URI + "/api/rooms/" + roomId + "/chats", {
                     method: "GET",
                     headers: {
                         "Authorization": "Bearer " + token,
