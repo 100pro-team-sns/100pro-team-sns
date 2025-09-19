@@ -1,5 +1,3 @@
-import {Routes, Route} from "react-router";
-import {useState} from "react";
 import {createBrowserRouter, RouterProvider} from "react-router";
 import Introduction from "./Introduction.tsx";
 import Login from "./Login.tsx";

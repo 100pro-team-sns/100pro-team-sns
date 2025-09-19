@@ -2,6 +2,7 @@
 import "./Home.css"
 
 import {useLocation} from "react-router";
+import socket from "./socket.ts";
 
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router";
@@ -10,13 +11,28 @@ function New() {
     const [stateMessage, setStateMessage] = useState<string>("位置情報を取得中...");
     const [tipMessage, setTipMessage] = useState<string>("");
     const [retryCount, setRetryCount] = useState<number>(0);
-    const location = useLocation();
-    const {userId, token} = location.state || {};
     const navigate = useNavigate();
+    const userId: number|null = Number(localStorage.getItem("userId"));
+    const token: string|null  = localStorage.getItem("token");
 
     //todo: 既存のチャットがある場合はマッチングを作成しない
     useEffect(() => {
-        if (retryCount > 5) {
+        const onMatchCreated = function (args: {
+            roomId: number,
+            user1: {id: number, email: string},
+            user2: {id: number, email: string}
+            expiredAt: Date
+        }) {
+            if (args.user1.id !== userId && args.user2.id !== userId) {
+                //todo: 当該ユーザー以外にはemitしない
+                return;
+            }
+
+        };
+
+
+
+        if (retryCount > 3) {
             navigate("/app/home", {state: {
                 userId: userId,
                 token: token,

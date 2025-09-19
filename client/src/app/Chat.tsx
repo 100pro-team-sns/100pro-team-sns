@@ -64,8 +64,7 @@ function Chat() {
                 return () => {};
             }
 
-
-            const handleMessage = function (args: {
+            const onMessagePosted = function (args: {
                 id: number,
                 roomId: number,
                 userId: number,
@@ -78,10 +77,24 @@ function Chat() {
                 console.log(args.user);
             }
 
-            socket.on("new_message", handleMessage);
+            const onMatchStopped = function (args: {
+                roomId: number,
+                stoppedBy: number,
+                message: string
+            }) {
+                navigate("/app/home", {
+                    state: {
+                        errorMessage: "相手方によりマッチングが中止されました"
+                    }
+                });
+            }
+
+            socket.on("new_message", onMessagePosted);
+            socket.on("match_stopped ", onMatchStopped);
 
             return () => {
-                socket.off("new_message", handleMessage);
+                socket.off("new_message", onMessagePosted);
+                socket.off("match_stopped", onMatchStopped);
             };
         })()}, []);
 
