@@ -3,19 +3,72 @@ import socket from "./socket";
 import {useParams} from "react-router";
 import {useNavigate} from "react-router";
 
+import Notification from "./entity/Notification.tsx";
+
 import "./Chat.css";
 
+type NotificationItem = {
+    id: number;
+    message: string;
+    navigateTo: string|null;
+};
+
 function Chat() {
-    const [messages, setMessages] = useState<{text: string; from: "me"|"other"|"system"}[]>([]);
+    const [messages, setMessages] = useState<{text: string; from: "me"|"other"|"system"|"error"}[]>([]);
     const [input, setInput] = useState<string>("");
-    const roomId: number = Number(useParams<{roomId: string}>().roomId);
+    const userIdString: string|null = localStorage.getItem("userId");
+    const userId: number|null = userIdString !== null ? Number(userIdString) : null;
+    const roomIdString: string|undefined = useParams<{roomId: string}>().roomId;
+    const roomId: number = Number(roomIdString);
     const navigate = useNavigate();
-    const addMessage = function (text: string, from: "me"|"other"|"system") {
+    const addMessage = function (text: string, from: "me"|"other"|"system"|"error") {
         const previousMessages = [...messages];
         setMessages([...previousMessages, {text, from}]);
     }
 
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+    const addNotification = (message: string, navigateTo: string|null) => {
+        const id = Date.now(); // 一意なID
+        setNotifications((prev) => [...prev, {id, message, navigateTo}]);
+    };
+
+    const removeNotification = (id: number) => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+    };
+
     useEffect(() => {
+        const onMatchCreated = function (args: {
+            roomId: number,
+            user1: {id: number, email: string},
+            user2: {id: number, email: string}
+            expiredAt: Date
+        }) {
+            if (args.user1.id !== userId && args.user2.id !== userId) {
+                //todo: 当該ユーザー以外にはemitしない
+                return;
+            }
+            addNotification("マッチングに成功しました！タップして新しいチャットを始めましょう", "/app/chat/" + args.roomId);
+        };
+
+        const onUserJoined = function (args: {
+            userId: number,
+            //todo: userEmailの送信が匿名性を失う可能性がある
+            userEmail: string,
+            message: string
+        }) {
+            addMessage("相手方がオンラインになりました: " + args.message, "system");
+        };
+
+        const onUserLeft = function (args: {
+            userId: number,
+            //todo: userEmailの送信が匿名性を失う可能性がある
+            userEmail: string,
+            message: string
+        }) {
+            addMessage("相手方がオフラインになりました: " + args.message, "system");
+        };
+
         (async () => {
             const token: string | null = localStorage.getItem("token");
             const userId: number | null = Number(localStorage.getItem("userId"));
@@ -89,14 +142,29 @@ function Chat() {
                 });
             }
 
+            socket.emit("join_room", {roomId: roomId});
+
             socket.on("new_message", onMessagePosted);
             socket.on("match_stopped ", onMatchStopped);
+            socket.on("match_created", onMatchCreated);
+            socket.on("user_joined", onUserJoined);
+            socket.on("user_left", onUserLeft);
 
             return () => {
+                socket.emit("leave_room");
+
                 socket.off("new_message", onMessagePosted);
                 socket.off("match_stopped", onMatchStopped);
+                socket.off("match_created", onMatchCreated);
+                socket.off("user_joined", onUserJoined);
+                socket.off("user_left", onUserLeft);
             };
-        })()}, []);
+        })()}, [roomIdString]);
+
+    if (!socket || userId === null) {
+        navigate("/login");
+        return (<p>redirecting to login page</p>)
+    }
 
     const sendMessage = () => {
         if (!input.trim()) return;

@@ -31,11 +31,19 @@
 
 .chat-message.other {
   align-self: flex-start;
-  background-color: #777;
+  background-color: #559d99;
   color: white;
 }
 
 .chat-message.system {
+  align-self: center;
+  background-color: #777;
+  color: white;
+  width: 70%;
+  margin-top: 30px;
+}
+
+.chat-message.error {
   align-self: center;
   background-color: #e23a3a;
   color: white;
