@@ -30,10 +30,10 @@ module.exports = (sequelize) => {
     token_expired_at: { 
       type: DataTypes.DATE 
     },
-    train_id: { 
+    section_id: {
       type: DataTypes.STRING(255) 
     },
-    train_id_expired_at: { 
+    section_id_expired_at: {
       type: DataTypes.DATE 
     },
   }, {
