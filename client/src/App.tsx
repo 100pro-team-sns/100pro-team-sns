@@ -4,10 +4,12 @@ import Login from "./Login.tsx";
 import Home from "./app/Home.tsx";
 import New from "./app/New.tsx";
 import Chat from "./app/Chat.tsx";
+import Register from "./Register.tsx";
 
 const router = createBrowserRouter([
     { path: "/", Component: Introduction },
     { path: "/login", Component: Login },
+    { path: "/register", Component: Register },
     { path: "/app/home", Component: Home },
     { path: "/app/new", Component: New },
     { path: "/app/chat/:chatId", Component: Chat },

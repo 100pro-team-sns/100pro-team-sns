@@ -6,7 +6,6 @@ import socket from "./socket.ts";
 
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router";
-import NotificationContainer from "./NotificationContainer.tsx";
 
 function New() {
     const [stateMessage, setStateMessage] = useState<string>("位置情報を取得中...");
@@ -97,7 +96,6 @@ function New() {
 
     return (
         <div>
-            <NotificationContainer></NotificationContainer>
             <h2>{stateMessage}</h2>
             <p>{tipMessage}</p>
         </div>
