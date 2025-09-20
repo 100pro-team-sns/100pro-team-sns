@@ -11,6 +11,7 @@ class LocationData(BaseModel):
 
 class LineResponse(BaseModel):
     line: Optional[str] = None
+    description: Optional[str] = None
 
 class SectionQueueRequest(BaseModel):
     user_id: int

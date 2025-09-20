@@ -64,8 +64,18 @@ async def set_location(location_data: LocationData):
             except requests.exceptions.RequestException as e:
                 logger.error(f"Failed to notify server1: {e}")
         
-        return LineResponse(line=line)
-        
+        # descriptionを生成
+        description = None
+        if line and section_id:
+            # section_idから駅名を抽出 (例: "御堂筋線_中津_梅田" -> ["中津", "梅田"])
+            parts = section_id.split("_")
+            if len(parts) >= 3:
+                station1 = parts[1]
+                station2 = parts[2]
+                description = f"あなたは{line}の{station1}駅と{station2}駅の間にいます"
+
+        return LineResponse(line=line, description=description)
+
     except Exception as e:
         logger.error(f"Error in set_location: {e}")
         raise HTTPException(status_code=500, detail=str(e))
