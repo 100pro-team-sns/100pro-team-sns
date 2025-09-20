@@ -47,7 +47,22 @@ function Home() {
             addNotification("マッチングに成功しました！タップしてチャットを始めましょう", "/app/chat/" + args.roomId);
         };
 
+        const onSocketCollapsed = function() {
+            addNotification("ログアウトしました", "/login");
+            setTimeout(() => {
+                socket.connect();
+            }, 3000);
+        }
+
         socket.on("match_created", onMatchCreated);
+        socket.on("disconnect", () => {
+            addNotification("サーバーとの通信が失われました。3秒後に再試行し、それでも不通の場合はログアウトします", null);
+            setTimeout(() => {
+                socket.connect();
+            }, 3000);
+        });
+        socket.on("connect_error", onSocketCollapsed);
+        socket.on("connect_timeout", onSocketCollapsed);
 
         return () => {
             socket.off("match_created", onMatchCreated);

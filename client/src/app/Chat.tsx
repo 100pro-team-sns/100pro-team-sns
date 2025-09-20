@@ -23,6 +23,7 @@ function Chat() {
     const navigate = useNavigate();
     const addMessage = function (text: string, from: "me"|"other"|"system"|"error") {
         const previousMessages = [...messages];
+        console.log(previousMessages)
         setMessages([...previousMessages, {text, from}]);
     }
 
@@ -126,6 +127,9 @@ function Chat() {
                 createdAt: string,
                 user: any
             }) {
+                if (args.userId === userId) {
+                    return;
+                }
                 addMessage(args.message, "other");
                 console.log(args.user);
             }
@@ -142,13 +146,16 @@ function Chat() {
                 });
             }
 
-            socket.emit("join_room", {roomId: roomId});
+            socket.emit("join_room", roomId);
 
             socket.on("new_message", onMessagePosted);
             socket.on("match_stopped ", onMatchStopped);
             socket.on("match_created", onMatchCreated);
             socket.on("user_joined", onUserJoined);
             socket.on("user_left", onUserLeft);
+            socket.on("error", (error: any) => {
+                console.error(error);
+            });
 
             return () => {
                 socket.emit("leave_room");
@@ -158,6 +165,7 @@ function Chat() {
                 socket.off("match_created", onMatchCreated);
                 socket.off("user_joined", onUserJoined);
                 socket.off("user_left", onUserLeft);
+                socket.off("error");
             };
         })()}, [roomIdString]);
 
