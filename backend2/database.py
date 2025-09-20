@@ -15,15 +15,15 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 class UserDB(Base):
-    __tablename__ = "USERS"
+    __tablename__ = "users"
     
-    id = Column("ID", BigInteger, primary_key=True, autoincrement=True)
-    email = Column("EMAIL", String(255), nullable=False, unique=True)
-    password = Column("PASSWORD", String(64), nullable=False)
-    token = Column("TOKEN", String(255), unique=True)
-    token_expired_at = Column("TOKEN_EXPIRED_AT", DateTime)
-    train_id = Column("TRAIN_ID", String(255), nullable=False)
-    train_id_expired_at = Column("TRAIN_ID_EXPIRED_AT", DateTime)
+    id = Column("id", BigInteger, primary_key=True, autoincrement=True)
+    email = Column("email", String(255), nullable=False, unique=True)
+    password = Column("password", String(64), nullable=False)
+    token = Column("token", String(255), unique=True)
+    token_expired_at = Column("token_expired_at", DateTime)
+    section_id = Column("section_id", String(255))
+    section_id_expired_at = Column("section_id_expired_at", DateTime)
 
 class RoomDB(Base):
     __tablename__ = "ROOMS"
