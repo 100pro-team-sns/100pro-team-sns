@@ -1,28 +1,26 @@
+import {createBrowserRouter, RouterProvider} from "react-router";
+import Introduction from "./Introduction.tsx";
+import Login from "./Login.tsx";
+import Home from "./app/Home.tsx";
+import New from "./app/New.tsx";
+import Chat from "./app/Chat.tsx";
+import Register from "./Register.tsx";
 
-import "./App.css"
-
-import {useLocation} from "react-router";
-
-import React, {useEffect, useState} from "react";
-import {io} from "socket.io-client";
-import {Socket} from "socket.io-client";
-
-let socket: Socket|null = null;
+const router = createBrowserRouter([
+    { path: "/", Component: Introduction },
+    { path: "/login", Component: Login },
+    { path: "/register", Component: Register },
+    { path: "/app/home", Component: Home },
+    { path: "/app/new", Component: New },
+    { path: "/app/chat/:chatId", Component: Chat },
+]);
 
 function App() {
-    const location = useLocation();
-    const {username} = location.state || {};
-
-    return <div>ようこそ {username} さん</div>;
-
-    socket = io("http://localhost:3000");
-
-    socket.on("connect", () => {
-        console.log(`サーバとの接続確認：`);
-        console.log(socket.connect());
-    });
-
-
+    return (
+        <div>
+            <RouterProvider router={router} />
+        </div>
+    );
 }
 
-export default App
+export default App;

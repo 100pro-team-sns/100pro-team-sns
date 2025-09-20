@@ -1,4 +1,4 @@
-import './App.css'
+import './app/Home.css'
 import styles from './Introduction.module.css'
 import { Link } from "react-router";
 

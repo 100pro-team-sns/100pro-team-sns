@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {Link, useNavigate} from "react-router";
 import socket from "./app/socket.ts";
 
-function Login() {
+function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -13,7 +13,7 @@ function Login() {
         setError(null);
 
         try {
-            const res = await fetch(import.meta.env.VITE_SOCKET_IO_URI + "/api/login", {
+            const res = await fetch(import.meta.env.VITE_SOCKET_IO_URI + "/api/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -59,7 +59,7 @@ function Login() {
 
     return (
         <>
-            <h2>ログイン</h2>
+            <h2>新規登録</h2>
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
@@ -73,14 +73,15 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="パスワード"
                 />
-                <button type="submit">ログイン</button>
-                <Link to="/register">
-                    <p>アカウントをお持ちでない場合</p>
-                </Link>
+                <button type="submit">登録</button>
+
                 {error && <p style={{color: "red"}}>{error}</p>}
             </form>
+            <Link to="/login">
+                <p>アカウントをすでにお持ちの場合</p>
+            </Link>
         </>
     );
 }
 
-export default Login
+export default Register

@@ -1,0 +1,201 @@
+import {useState, useEffect} from "react";
+import socket from "./socket";
+import {useParams} from "react-router";
+import {useNavigate} from "react-router";
+
+import Notification from "./entity/Notification.tsx";
+
+import "./Chat.css";
+
+type NotificationItem = {
+    id: number;
+    message: string;
+    navigateTo: string|null;
+};
+
+function Chat() {
+    const [messages, setMessages] = useState<{text: string; from: "me"|"other"|"system"|"error"}[]>([]);
+    const [input, setInput] = useState<string>("");
+    const userIdString: string|null = localStorage.getItem("userId");
+    const userId: number|null = userIdString !== null ? Number(userIdString) : null;
+    const roomIdString: string|undefined = useParams<{roomId: string}>().roomId;
+    const roomId: number = Number(roomIdString);
+    const navigate = useNavigate();
+    const addMessage = function (text: string, from: "me"|"other"|"system"|"error") {
+        const previousMessages = [...messages];
+        setMessages([...previousMessages, {text, from}]);
+    }
+
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+    const addNotification = (message: string, navigateTo: string|null) => {
+        const id = Date.now(); // 一意なID
+        setNotifications((prev) => [...prev, {id, message, navigateTo}]);
+    };
+
+    const removeNotification = (id: number) => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+    };
+
+    useEffect(() => {
+        const onMatchCreated = function (args: {
+            roomId: number,
+            user1: {id: number, email: string},
+            user2: {id: number, email: string}
+            expiredAt: Date
+        }) {
+            if (args.user1.id !== userId && args.user2.id !== userId) {
+                //todo: 当該ユーザー以外にはemitしない
+                return;
+            }
+            addNotification("マッチングに成功しました！タップして新しいチャットを始めましょう", "/app/chat/" + args.roomId);
+        };
+
+        const onUserJoined = function (args: {
+            userId: number,
+            //todo: userEmailの送信が匿名性を失う可能性がある
+            userEmail: string,
+            message: string
+        }) {
+            addMessage("相手方がオンラインになりました: " + args.message, "system");
+        };
+
+        const onUserLeft = function (args: {
+            userId: number,
+            //todo: userEmailの送信が匿名性を失う可能性がある
+            userEmail: string,
+            message: string
+        }) {
+            addMessage("相手方がオフラインになりました: " + args.message, "system");
+        };
+
+        (async () => {
+            const token: string | null = localStorage.getItem("token");
+            const userId: number | null = Number(localStorage.getItem("userId"));
+            if (token === null || userId === null) {
+                navigate("/login");
+                return () => {};
+            }
+            try {
+                const chatHistoryResponse = await fetch(import.meta.env.VITE_SOCKET_IO_URI + "/api/rooms/" + roomId + "/chats", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                });
+                if (chatHistoryResponse.status === 401 || chatHistoryResponse.status === 403) {
+                    navigate("/login");
+                    return () => {};
+                }
+                if (chatHistoryResponse.status === 404) {
+                    navigate("/app/home", {
+                        state: {
+                            errorMessage: "この部屋を閲覧する権限がありません"
+                        }
+                    });
+                    return () => {};
+                }
+                const chats: {
+                    id: number,
+                    room_id: number,
+                    user_id: number,
+                    created_at: string,
+                    context: string,
+                    link: string|null
+                }[] = (await chatHistoryResponse.json()).chats;
+                setMessages(chats.map((chat) => ({
+                    text: chat.context,
+                    from: chat.user_id === userId ? "me" : "other"
+                })));
+            } catch (err) {
+                navigate("/app/home", {
+                    state: {
+                        errorMessage: "サーバーサイドと通信できませんでした"
+                    }
+                });
+                return () => {};
+            }
+
+            const onMessagePosted = function (args: {
+                id: number,
+                roomId: number,
+                userId: number,
+                message: string,
+                link: string | null,
+                createdAt: string,
+                user: any
+            }) {
+                addMessage(args.message, "other");
+                console.log(args.user);
+            }
+
+            const onMatchStopped = function (args: {
+                roomId: number,
+                stoppedBy: number,
+                message: string
+            }) {
+                navigate("/app/home", {
+                    state: {
+                        errorMessage: "相手方によりマッチングが中止されました"
+                    }
+                });
+            }
+
+            socket.emit("join_room", {roomId: roomId});
+
+            socket.on("new_message", onMessagePosted);
+            socket.on("match_stopped ", onMatchStopped);
+            socket.on("match_created", onMatchCreated);
+            socket.on("user_joined", onUserJoined);
+            socket.on("user_left", onUserLeft);
+
+            return () => {
+                socket.emit("leave_room");
+
+                socket.off("new_message", onMessagePosted);
+                socket.off("match_stopped", onMatchStopped);
+                socket.off("match_created", onMatchCreated);
+                socket.off("user_joined", onUserJoined);
+                socket.off("user_left", onUserLeft);
+            };
+        })()}, [roomIdString]);
+
+    if (!socket || userId === null) {
+        navigate("/login");
+        return (<p>redirecting to login page</p>)
+    }
+
+    const sendMessage = () => {
+        if (!input.trim()) return;
+        setMessages((prev) => [...prev, { text: input, from: "me" }]);
+        setInput("");
+        socket.emit("send_message", {roomId: roomId, message: input, link: null});
+    };
+
+    return (
+        <div className="chat-container">
+            {/* チャット表示部分 */}
+            <div className="chat-messages">
+                {messages.map((msg, index) => (
+                    <div key={index} className={`chat-message ${msg.from}`}>
+                        {msg.text}
+                    </div>
+                ))}
+            </div>
+
+            {/* 入力欄 */}
+            <div className="chat-input">
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="メッセージを入力..."
+                />
+                <button onClick={sendMessage}>送信</button>
+            </div>
+        </div>
+    );
+}
+
+export default Chat
