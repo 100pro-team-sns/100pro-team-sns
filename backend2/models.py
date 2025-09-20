@@ -12,10 +12,10 @@ class LocationData(BaseModel):
 class LineResponse(BaseModel):
     line: Optional[str] = None
 
-class QueueAddRequest(BaseModel):
+class SectionQueueRequest(BaseModel):
     user_id: int
     line: str
-    train_id: str
+    section_id: str
 
 class User(BaseModel):
     id: int

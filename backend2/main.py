@@ -9,7 +9,7 @@ from datetime import datetime
 import logging
 
 from database import get_db, verify_token
-from models import LocationData, LineResponse, QueueAddRequest
+from models import LocationData, LineResponse, SectionQueueRequest
 from train_detector import TrainDetector
 
 load_dotenv()
@@ -39,19 +39,19 @@ async def set_location(location_data: LocationData):
 
     try:
         
-        line, train_id = train_detector.detect_train(
+        line, section_id = train_detector.detect_train(
             location_data.latitude,
             location_data.longitude,
             location_data.speed,
             location_data.direction
         )
-        
-        if line and train_id:
+
+        if line and section_id:
             server1_url = os.getenv("SERVER1_URL", "http://localhost:3000")
-            queue_data = QueueAddRequest(
+            queue_data = SectionQueueRequest(
                 user_id=user.id,
                 line=line,
-                train_id=train_id
+                section_id=section_id
             )
             
             try:
@@ -60,7 +60,7 @@ async def set_location(location_data: LocationData):
                     json=queue_data.dict()
                 )
                 response.raise_for_status()
-                logger.info(f"User {user.id} added to queue for line {line}, train {train_id}")
+                logger.info(f"User {user.id} added to queue for line {line}, section {section_id}")
             except requests.exceptions.RequestException as e:
                 logger.error(f"Failed to notify server1: {e}")
         
