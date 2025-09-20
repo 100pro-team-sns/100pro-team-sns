@@ -12,7 +12,7 @@ const router = createBrowserRouter([
     { path: "/register", Component: Register },
     { path: "/app/home", Component: Home },
     { path: "/app/new", Component: New },
-    { path: "/app/chat/:chatId", Component: Chat },
+    { path: "/app/chat/:roomId", Component: Chat },
 ]);
 
 function App() {
