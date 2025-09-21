@@ -23,8 +23,8 @@ class User(BaseModel):
     email: str
     token: Optional[str] = None
     token_expired_at: Optional[datetime] = None
-    train_id: Optional[str] = None
-    train_id_expired_at: Optional[datetime] = None
+    section_id: Optional[str] = None
+    section_id_expired_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

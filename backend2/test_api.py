@@ -17,7 +17,7 @@ def test_api():
     # 2. 有効なトークンでテスト（東京駅）
     print("\n2. Valid Token Test (Tokyo Station):")
     data = {
-        "token": "test_token_12345",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsImlhdCI6MTc1ODM1ODcwOSwiZXhwIjoxNzU4NDQ1MTA5fQ.bXDWsrNU2nqiNf3eYsB8mn1WwSAa_B0HyDk3F_WcTQA",
         "latitude": 35.681382,
         "longitude": 139.766084,
         "speed": 30.0,
@@ -34,7 +34,7 @@ def test_api():
     # 4. 速度が低い場合のテスト
     print("\n4. Low Speed Test:")
     data = {
-        "token": "test_token_12345",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsImlhdCI6MTc1ODM1ODcwOSwiZXhwIjoxNzU4NDQ1MTA5fQ.bXDWsrNU2nqiNf3eYsB8mn1WwSAa_B0HyDk3F_WcTQA",
         "latitude": 35.681382,
         "longitude": 139.766084,
         "speed": 5.0,  # 低速
@@ -47,7 +47,7 @@ def test_api():
     # 5. 電車路線から離れた位置のテスト
     print("\n5. Far from Train Line Test:")
     data = {
-        "token": "test_token_12345",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsImlhdCI6MTc1ODM1ODcwOSwiZXhwIjoxNzU4NDQ1MTA5fQ.bXDWsrNU2nqiNf3eYsB8mn1WwSAa_B0HyDk3F_WcTQA",
         "latitude": 35.700000,  # 電車路線から離れた位置
         "longitude": 139.700000,
         "speed": 30.0,
