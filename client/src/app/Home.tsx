@@ -57,7 +57,7 @@ function Home() {
         const onSocketCollapsed = function() {
             addNotification("ログアウトしました", "/login");
             setTimeout(() => {
-                socket.connect();
+                navigate("/login");
             }, 3000);
         }
 
@@ -92,6 +92,10 @@ function Home() {
         navigate("/app/chat/" + roomId);
     }
 
+    function onChatsButtonClicked(): void {
+        navigate("/app/chats");
+    }
+
     if (!socket || userId === null || token === null) {
         navigate("/login");
         return (<p>redirecting to login page</p>)
@@ -114,6 +118,7 @@ function Home() {
             {errorMessage && <p>{errorMessage}</p>}
             <button onClick={onNewButtonClicked}>新しい会話を始める</button>
             <button onClick={onChatButtonClicked}>既存の会話を続ける</button>
+            <button onClick={onChatsButtonClicked}>過去のチャットを見る</button>
         </div>
     );
 

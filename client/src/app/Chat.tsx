@@ -151,7 +151,7 @@ function Chat() {
             const onSocketCollapsed = function() {
                 addNotification("ログアウトしました", "/login");
                 setTimeout(() => {
-                    socket.connect();
+                    navigate("/login");
                 }, 3000);
             }
 
