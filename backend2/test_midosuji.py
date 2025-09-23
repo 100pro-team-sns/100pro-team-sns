@@ -49,7 +49,7 @@ def test_midosuji_line():
             "name": "路線から離れた位置テスト",
             "lat": 34.700594,
             "lon": 135.496505,
-            "expected": "御堂筋線（北大阪急行直通）"
+            "expected": "御堂筋線"
         },
         {
             "name": "路線から離れた位置",

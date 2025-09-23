@@ -9,12 +9,12 @@ class TrainDetector:
     def __init__(self):
         self.train_lines = self._load_train_data()
         self.speed_threshold = 10.0
-        self.max_distance_from_line = 0.001
+        self.max_distance_from_line = 1.0
     
     def _load_train_data(self):
         train_lines = {
             "midosuji": {
-                "name": "御堂筋線（北大阪急行直通）",
+                "name": "御堂筋線",
                 "stations": [
                     {"name": "なかもず", "lat": 34.556697, "lon": 135.503074},
                     {"name": "新金岡", "lat": 34.567780, "lon": 135.515000},
@@ -142,10 +142,9 @@ class TrainDetector:
 
         nearest_line, distance = self._find_nearest_line(latitude, longitude)
 
-        # 距離条件も緩和 - 御堂筋線付近であればOK
-        # if distance > self.max_distance_from_line:
-        #     logger.info(f"Distance {distance:.4f} km from nearest line exceeds threshold")
-        #     return None, None
+        if distance > self.max_distance_from_line:
+            logger.info(f"Distance {distance:.4f} km from nearest line exceeds threshold")
+            return None, None
         
         if nearest_line:
             section_id = self._generate_section_id(nearest_line, latitude, longitude)
