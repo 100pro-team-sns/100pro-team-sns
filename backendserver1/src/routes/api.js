@@ -210,5 +210,112 @@ module.exports = (io) => {
     }
   });
 
+  router.post('/train/join', authenticateToken, async (req, res) => {
+    try {
+      const { train_id } = req.body;
+      const userId = req.user.userId;
+
+      if (!train_id) {
+        return res.status(400).json({ error: 'train_id is required' });
+      }
+
+      const expiredAt = new Date(Date.now() + 3 * 60 * 60 * 1000); // 3 hours from now
+
+      await User.update(
+        {
+          section_id: train_id,
+          section_id_expired_at: expiredAt
+        },
+        { where: { id: userId } }
+      );
+
+      res.status(200).json({
+        message: 'Successfully joined train',
+        train_id,
+        expired_at: expiredAt
+      });
+    } catch (error) {
+      console.error('Train join error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  router.post('/train/leave', authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user.userId;
+
+      await User.update(
+        {
+          section_id: null,
+          section_id_expired_at: null
+        },
+        { where: { id: userId } }
+      );
+
+      res.status(200).json({
+        message: 'Successfully left train'
+      });
+    } catch (error) {
+      console.error('Train leave error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  router.get('/chats', authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user.userId;
+
+      const rooms = await Room.findAll({
+        where: {
+          [require('sequelize').Op.or]: [
+            { user_id_1: userId },
+            { user_id_2: userId }
+          ]
+        },
+        include: [
+          {
+            model: User,
+            as: 'user1',
+            attributes: ['id', 'email']
+          },
+          {
+            model: User,
+            as: 'user2',
+            attributes: ['id', 'email']
+          }
+        ]
+      });
+
+      const chatList = await Promise.all(rooms.map(async (room) => {
+        const lastMessage = await Chat.findOne({
+          where: { room_id: room.id },
+          order: [['created_at', 'DESC']],
+          attributes: ['context', 'created_at']
+        });
+
+        const otherUser = room.user_id_1 === userId
+          ? { id: room.user_id_2, email: room.user2?.email }
+          : { id: room.user_id_1, email: room.user1?.email };
+
+        const isExpired = new Date() > new Date(room.expired_at);
+
+        return {
+          roomId: room.id,
+          otherUser,
+          isExpired,
+          lastMessage: lastMessage ? {
+            context: lastMessage.context,
+            createdAt: lastMessage.created_at
+          } : null
+        };
+      }));
+
+      res.status(200).json(chatList);
+    } catch (error) {
+      console.error('Get chat list error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   return router;
 };
