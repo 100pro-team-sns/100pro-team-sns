@@ -47,6 +47,13 @@ function Home() {
             addNotification("マッチングに成功しました！タップしてチャットを始めましょう", "/app/chat/" + args.roomId);
         };
 
+        const onSocketDisconnected = () => {
+            addNotification("サーバーとの通信が失われました。3秒後に再試行し、それでも不通の場合はログアウトします", null);
+            setTimeout(() => {
+                socket.connect();
+            }, 3000);
+        }
+
         const onSocketCollapsed = function() {
             addNotification("ログアウトしました", "/login");
             setTimeout(() => {
@@ -54,18 +61,20 @@ function Home() {
             }, 3000);
         }
 
+        if (!socket.connected) {
+            onSocketDisconnected();
+        }
+
         socket.on("match_created", onMatchCreated);
-        socket.on("disconnect", () => {
-            addNotification("サーバーとの通信が失われました。3秒後に再試行し、それでも不通の場合はログアウトします", null);
-            setTimeout(() => {
-                socket.connect();
-            }, 3000);
-        });
+        socket.on("disconnect", onSocketDisconnected);
         socket.on("connect_error", onSocketCollapsed);
         socket.on("connect_timeout", onSocketCollapsed);
 
         return () => {
             socket.off("match_created", onMatchCreated);
+            socket.off("disconnect", onSocketDisconnected);
+            socket.off("connect_error", onSocketCollapsed);
+            socket.off("connect_timeout", onSocketCollapsed);
         };
     }, []);
 

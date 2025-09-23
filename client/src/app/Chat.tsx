@@ -3,9 +3,8 @@ import socket from "./socket";
 import {useParams} from "react-router";
 import {useNavigate} from "react-router";
 
-import Notification from "./entity/Notification.tsx";
-
 import "./Chat.css";
+import Notification from "./entity/Notification.tsx";
 
 type NotificationItem = {
     id: number;
@@ -127,11 +126,7 @@ function Chat() {
                 createdAt: string,
                 user: any
             }) {
-                if (args.userId === userId) {
-                    return;
-                }
-                addMessage(args.message, "other");
-                console.log(args.user);
+                addMessage(args.message, args.userId === userId ? "me" : "other");
             }
 
             const onMatchStopped = function (args: {
@@ -146,8 +141,29 @@ function Chat() {
                 });
             }
 
+            const onSocketDisconnected = () => {
+                addNotification("サーバーとの通信が失われました。3秒後に再試行し、それでも不通の場合はログアウトします", null);
+                setTimeout(() => {
+                    socket.connect();
+                }, 3000);
+            }
+
+            const onSocketCollapsed = function() {
+                addNotification("ログアウトしました", "/login");
+                setTimeout(() => {
+                    socket.connect();
+                }, 3000);
+            }
+
+            if (!socket.connected) {
+                onSocketDisconnected();
+            }
+
             socket.emit("join_room", roomId);
 
+            socket.on("disconnect", onSocketDisconnected);
+            socket.on("connect_error", onSocketCollapsed);
+            socket.on("connect_timeout", onSocketCollapsed);
             socket.on("new_message", onMessagePosted);
             socket.on("match_stopped ", onMatchStopped);
             socket.on("match_created", onMatchCreated);
@@ -160,6 +176,9 @@ function Chat() {
             return () => {
                 socket.emit("leave_room");
 
+                socket.off("disconnect", onSocketDisconnected);
+                socket.off("connect_error", onSocketCollapsed);
+                socket.off("connect_timeout", onSocketCollapsed);
                 socket.off("new_message", onMessagePosted);
                 socket.off("match_stopped", onMatchStopped);
                 socket.off("match_created", onMatchCreated);
@@ -169,7 +188,7 @@ function Chat() {
             };
         })()}, [roomIdString]);
 
-    if (!socket || userId === null) {
+    if (userId === null) {
         navigate("/login");
         return (<p>redirecting to login page</p>)
     }
@@ -181,28 +200,44 @@ function Chat() {
         socket.emit("send_message", {roomId: roomId, message: input, link: null});
     };
 
+    const inputEnabled = localStorage.getItem("enabledRoomId") === roomIdString;
+
     return (
-        <div className="chat-container">
-            {/* チャット表示部分 */}
-            <div className="chat-messages">
-                {messages.map((msg, index) => (
-                    <div key={index} className={`chat-message ${msg.from}`}>
-                        {msg.text}
-                    </div>
+        <>
+            <div className="notification-container">
+                {notifications.map((n) => (
+                    <Notification
+                        key={n.id}
+                        id={n.id}
+                        message={n.message}
+                        onClose={removeNotification}
+                        navigateTo={n.navigateTo}
+                    />
                 ))}
             </div>
+            <div className="chat-container">
+                {/* チャット表示部分 */}
+                <div className="chat-messages">
+                    {messages.map((msg, index) => (
+                        <div key={index} className={`chat-message ${msg.from}`}>
+                            {msg.text}
+                        </div>
+                    ))}
+                </div>
 
-            {/* 入力欄 */}
-            <div className="chat-input">
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="メッセージを入力..."
-                />
-                <button onClick={sendMessage}>送信</button>
+                {/* 入力欄 */}
+                <div className="chat-input">
+                    <input
+                        type="text"
+                        value={input}
+                        disabled={!inputEnabled}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder={inputEnabled ? "メッセージを入力..." : "このチャットではメッセージの送信ができません"}
+                    />
+                    <button onClick={sendMessage}>送信</button>
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 

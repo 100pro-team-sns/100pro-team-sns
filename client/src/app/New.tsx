@@ -1,11 +1,17 @@
 
 import "./Home.css"
 
-import {useLocation} from "react-router";
 import socket from "./socket.ts";
 
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router";
+import Notification from "./entity/Notification.tsx";
+
+type NotificationItem = {
+    id: number;
+    message: string;
+    navigateTo: string|null;
+};
 
 function New() {
     const [stateMessage, setStateMessage] = useState<string>("位置情報を取得中...");
@@ -15,6 +21,17 @@ function New() {
     const userIdString: string|null = localStorage.getItem("userId");
     const userId: number|null = userIdString !== null ? Number(userIdString) : null;
     const token: string|null  = localStorage.getItem("token");
+
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+    const addNotification = (message: string, navigateTo: string|null) => {
+        const id = Date.now(); // 一意なID
+        setNotifications((prev) => [...prev, {id, message, navigateTo}]);
+    };
+
+    const removeNotification = (id: number) => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+    };
 
     //todo: 既存のチャットがある場合はマッチングを作成しない
     useEffect(() => {
@@ -35,6 +52,24 @@ function New() {
                 navigate("/app/chat/" + args.roomId)
             }, 3000);
         };
+
+        const onSocketDisconnected = () => {
+            addNotification("サーバーとの通信が失われました。3秒後に再試行し、それでも不通の場合はログアウトします", null);
+            setTimeout(() => {
+                socket.connect();
+            }, 3000);
+        }
+
+        const onSocketCollapsed = function() {
+            addNotification("ログアウトしました", "/login");
+            setTimeout(() => {
+                socket.connect();
+            }, 3000);
+        }
+
+        if (!socket.connected) {
+            onSocketDisconnected();
+        }
 
         if (retryCount > 3) {
             navigate("/app/home", {state: {
@@ -88,14 +123,31 @@ function New() {
             }
         );
         socket.on("match_created", onMatchCreated);
+        socket.on("disconnect", onSocketDisconnected);
+        socket.on("connect_error", onSocketCollapsed);
+        socket.on("connect_timeout", onSocketCollapsed);
 
         return () => {
             socket.off("match_created", onMatchCreated);
+            socket.off("disconnect", onSocketDisconnected);
+            socket.off("connect_error", onSocketCollapsed);
+            socket.off("connect_timeout", onSocketCollapsed);
         };
     }, [retryCount]);
 
     return (
         <div>
+            <div className="notification-container">
+                {notifications.map((n) => (
+                    <Notification
+                        key={n.id}
+                        id={n.id}
+                        message={n.message}
+                        onClose={removeNotification}
+                        navigateTo={n.navigateTo}
+                    />
+                ))}
+            </div>
             <h2>{stateMessage}</h2>
             <p>{tipMessage}</p>
         </div>
