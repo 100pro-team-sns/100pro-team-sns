@@ -1,6 +1,6 @@
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import socket from "./socket";
-import {useNavigate} from "react-router";
+import {Link, useNavigate} from "react-router";
 
 import "./Chats.css";
 import Notification from "./entity/Notification.tsx";
@@ -11,13 +11,14 @@ type NotificationItem = {
     navigateTo: string|null;
 };
 
-type Room = {
+export type Room = {
     roomId: number;
     otherUser: {
         id: number,
         //todo: emailの送信が匿名性を失う可能性がある
         email: string
     };
+    isExpired: boolean;
     lastMessage: null|{
         context: string,
         createdAt: string
@@ -81,7 +82,7 @@ function Chats() {
                     return;
                 }
 
-                const data = await res.json();
+                const data: Room[] = await res.json();
                 setRooms(data);
             } catch (err) {
                 console.error("エラー:", err);
@@ -141,6 +142,11 @@ function Chats() {
                         navigateTo={n.navigateTo}
                     />
                 ))}
+            </div>
+            <div className="return-button">
+                <Link to="/app/home">
+                    <p>戻る</p>
+                </Link>
             </div>
             <div className="chats-container">
                 <h2 className="chats-title">チャット一覧</h2>

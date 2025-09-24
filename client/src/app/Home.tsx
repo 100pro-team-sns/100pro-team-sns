@@ -8,6 +8,7 @@ import {useNavigate} from "react-router";
 import socket from "./socket.ts";
 import {useEffect, useState} from "react";
 import Notification from "./entity/Notification.tsx";
+import {fetchEnabledRoomId} from "./api.ts";
 
 type NotificationItem = {
     id: number;
@@ -59,7 +60,16 @@ function Home() {
             setTimeout(() => {
                 navigate("/login");
             }, 3000);
-        }
+        };
+
+        (async () => {
+            const enabledRoomId = await fetchEnabledRoomId(token);
+            if (enabledRoomId !== null) {
+                localStorage.setItem("enabledRoomId", String(enabledRoomId));
+            } else {
+                localStorage.removeItem("enabledRoomId")
+            }
+        })();
 
         if (!socket.connected) {
             onSocketDisconnected();

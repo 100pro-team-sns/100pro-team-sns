@@ -6,6 +6,7 @@ import socket from "./socket.ts";
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Notification from "./entity/Notification.tsx";
+import {fetchEnabledRoomId} from "./api.ts";
 
 type NotificationItem = {
     id: number;
@@ -65,7 +66,19 @@ function New() {
             setTimeout(() => {
                 navigate("/login");
             }, 3000);
-        }
+        };
+
+        (async () => {
+            const enabledRoomId = await fetchEnabledRoomId(token);
+            if (enabledRoomId !== null) {
+                const enabledRoomIdString = String(enabledRoomId);
+                localStorage.setItem("enabledRoomId", String(enabledRoomIdString));
+                navigate("/app/chat/" + enabledRoomIdString);
+                return;
+            } else {
+                localStorage.removeItem("enabledRoomId")
+            }
+        })();
 
         if (!socket.connected) {
             onSocketDisconnected();
@@ -79,6 +92,9 @@ function New() {
             }});
             return;
         }
+
+        const usingTestData = import.meta.env.VITE_IS_DEVELOPMENT == true;
+
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 try {
@@ -88,30 +104,23 @@ function New() {
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                            latitude: pos.coords.latitude,
-                            longitude: pos.coords.longitude,
+                            token: token,
+                            /* テストデータでは山手線池袋-目白間のデータを使用 */
+                            latitude: usingTestData ? 35.726741 : pos.coords.latitude,
+                            longitude: usingTestData ? 139.709531 : pos.coords.longitude,
                         }),
                     });
 
-                    const data = await locRes.json();
-                    if (data.line === null) {
-                        setTipMessage("電車への乗車が確認できませんでしたので、再試行中です");
-                        setRetryCount(retryCount + 1);
+                    const locData = await locRes.json();
+                    if (locData.line === null) {
+                        setTipMessage("電車への乗車が確認できませんでしたので、10秒後に再試行します");
+                        setTimeout(() => {
+                            setRetryCount(retryCount + 1);
+                        }, 10000);
                         return;
                     }
-                    const queueRes = await fetch(import.meta.env.VITE_SOCKET_IO_URI + "/api/queue/add", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            latitude: pos.coords.latitude,
-                            longitude: pos.coords.longitude,
-                        }),
-                    });
-                    //todo queueのレスポンスに対するエラー表示
-                    setStateMessage("マッチング先を検索中です");
-                    setTipMessage("時間を要する場合があります");
+                    setStateMessage(locData.description);
+                    setTipMessage("マッチング先を検索中です 時間を要する場合があります");
                 } catch (err) {
                     setTipMessage("エラーが発生したため、再試行中です: " + (err as Error).message);
                     setRetryCount(retryCount + 1);
