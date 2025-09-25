@@ -37,8 +37,8 @@ function Home() {
     useEffect(() => {
         const onMatchCreated = function (args: {
             roomId: number,
-            user1: {id: number, email: string},
-            user2: {id: number, email: string}
+            user1: {id: number},
+            user2: {id: number}
             expiredAt: Date
         }) {
             if (args.user1.id !== userId && args.user2.id !== userId) {
@@ -70,10 +70,6 @@ function Home() {
                 localStorage.removeItem("enabledRoomId")
             }
         })();
-
-        if (!socket.connected) {
-            onSocketDisconnected();
-        }
 
         socket.on("match_created", onMatchCreated);
         socket.on("disconnect", onSocketDisconnected);
@@ -126,9 +122,11 @@ function Home() {
             </div>
             <p>ようこそ {userIdString} さん！</p>
             {errorMessage && <p>{errorMessage}</p>}
-            <button onClick={onNewButtonClicked}>新しい会話を始める</button>
-            <button onClick={onChatButtonClicked}>既存の会話を続ける</button>
-            <button onClick={onChatsButtonClicked}>過去のチャットを見る</button>
+            <div className="button-container">
+                <button onClick={onNewButtonClicked}>新しい会話を始める</button>
+                <button onClick={onChatButtonClicked}>既存の会話を続ける</button>
+                <button onClick={onChatsButtonClicked}>過去のチャットを見る</button>
+            </div>
         </div>
     );
 

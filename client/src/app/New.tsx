@@ -34,7 +34,6 @@ function New() {
         setNotifications((prev) => prev.filter((n) => n.id !== id));
     };
 
-    //todo: 既存のチャットがある場合はマッチングを作成しない
     useEffect(() => {
         const onMatchCreated = function (args: {
             roomId: number,
@@ -43,7 +42,6 @@ function New() {
             expiredAt: Date
         }) {
             if (args.user1.id !== userId && args.user2.id !== userId) {
-                //todo: 当該ユーザー以外にはemitしない
                 return;
             }
             setStateMessage("マッチングしました！");

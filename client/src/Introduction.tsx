@@ -11,7 +11,7 @@ function Introduction() {
                 <h3 id={styles.subtitle}>同じ路線に乗っている人としゃべれるアプリ</h3>
             </div>
             <Link to="/login">
-                <button id={styles.loginButton}>ログイン</button>
+                <button id={styles.loginButton}>今すぐ始めましょう</button>
             </Link>
         </div>
     )

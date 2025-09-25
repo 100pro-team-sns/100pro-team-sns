@@ -83,8 +83,7 @@ io.on('connection', (socket) => {
       
       socket.to(`room_${roomId}`).emit('user_joined', {
         userId: socket.userId,
-        userEmail: socket.userEmail,
-        message: `${socket.userEmail} joined the room`
+        message: 'your partner joined the room'
       });
     } catch (error) {
       console.error('Join room error:', error);
@@ -131,7 +130,6 @@ io.on('connection', (socket) => {
         message: chatWithUser.context,
         link: chatWithUser.link,
         createdAt: chatWithUser.created_at,
-        user: chatWithUser.User
       });
     } catch (error) {
       console.error('Send message error:', error);
@@ -143,8 +141,7 @@ io.on('connection', (socket) => {
     if (socket.currentRoom) {
       socket.to(`room_${socket.currentRoom}`).emit('user_left', {
         userId: socket.userId,
-        userEmail: socket.userEmail,
-        message: `${socket.userEmail} left the room`
+        message: 'your partner left the room'
       });
       
       socket.leave(`room_${socket.currentRoom}`);
@@ -158,8 +155,7 @@ io.on('connection', (socket) => {
     if (socket.currentRoom) {
       socket.to(`room_${socket.currentRoom}`).emit('user_left', {
         userId: socket.userId,
-        userEmail: socket.userEmail,
-        message: `${socket.userEmail} disconnected`
+        message: 'your partner disconnected'
       });
     }
   });

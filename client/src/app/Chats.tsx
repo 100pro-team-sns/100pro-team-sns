@@ -13,11 +13,7 @@ type NotificationItem = {
 
 export type Room = {
     roomId: number;
-    otherUser: {
-        id: number,
-        //todo: emailの送信が匿名性を失う可能性がある
-        email: string
-    };
+    otherUserId: number;
     isExpired: boolean;
     lastMessage: null|{
         context: string,

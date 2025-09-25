@@ -21,9 +21,9 @@ function Chat() {
     const roomId: number = Number(roomIdString);
     const navigate = useNavigate();
     const addMessage = function (text: string, from: "me"|"other"|"system"|"error") {
-        const previousMessages = [...messages];
-        console.log(previousMessages)
-        setMessages([...previousMessages, {text, from}]);
+        setMessages((prev) => {
+            return [...prev, { text, from }];
+        });
     }
 
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -53,8 +53,6 @@ function Chat() {
 
         const onUserJoined = function (args: {
             userId: number,
-            //todo: userEmailの送信が匿名性を失う可能性がある
-            userEmail: string,
             message: string
         }) {
             addMessage("相手方がオンラインになりました: " + args.message, "system");
@@ -62,8 +60,6 @@ function Chat() {
 
         const onUserLeft = function (args: {
             userId: number,
-            //todo: userEmailの送信が匿名性を失う可能性がある
-            userEmail: string,
             message: string
         }) {
             addMessage("相手方がオフラインになりました: " + args.message, "system");
@@ -126,6 +122,7 @@ function Chat() {
                 createdAt: string,
                 user: any
             }) {
+                console.log(args)
                 addMessage(args.message, args.userId === userId ? "me" : "other");
             }
 
@@ -195,7 +192,6 @@ function Chat() {
 
     const sendMessage = () => {
         if (!input.trim()) return;
-        setMessages((prev) => [...prev, { text: input, from: "me" }]);
         setInput("");
         socket.emit("send_message", {roomId: roomId, message: input, link: null});
     };

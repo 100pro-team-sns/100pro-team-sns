@@ -170,7 +170,6 @@ module.exports = (io) => {
     try {
       const {section_id, duration_hours = 24} = req.body;
       const userId = req.user.userId;
-      console.log("/train/join issued " + userId);
 
       if (!section_id) {
         return res.status(400).json({ error: 'train_id is required' });
@@ -207,6 +206,11 @@ module.exports = (io) => {
       });
 
       if (userMatchingTo === null) {
+        res.status(200).json({
+          message: 'Successfully joined train',
+          section_id,
+          expired_at: sectionIdExpiredAt
+        });
         return;
       }
 
@@ -220,13 +224,13 @@ module.exports = (io) => {
 
       io.emit('match_created', {
         roomId: room.id,
-        user1: { id: userId, email: req.user.email },
-        user2: { id: userMatchingTo.id, email: userMatchingTo.email },
+        user1: {id: userId},
+        user2: {id: userMatchingTo.id},
         roomExpiredAt
       });
 
       res.status(200).json({
-        message: 'Successfully joined train',
+        message: 'Successfully joined train and a room created',
         section_id,
         expired_at: sectionIdExpiredAt
       });
@@ -289,15 +293,13 @@ module.exports = (io) => {
           attributes: ['context', 'created_at']
         });
 
-        const otherUser = room.user_id_1 === userId
-          ? { id: room.user_id_2, email: room.user2?.email }
-          : { id: room.user_id_1, email: room.user1?.email };
+        const otherUserId = room.user_id_1 === userId ? room.user_id_2 : room.user_id_1
 
         const isExpired = new Date() > new Date(room.expired_at);
 
         return {
           roomId: room.id,
-          otherUser,
+          otherUserId,
           isExpired,
           lastMessage: lastMessage ? {
             context: lastMessage.context,
