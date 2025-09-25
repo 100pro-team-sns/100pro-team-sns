@@ -103,9 +103,9 @@ function New() {
                         },
                         body: JSON.stringify({
                             token: token,
-                            /* テストデータでは山手線池袋-目白間のデータを使用 */
-                            latitude: usingTestData ? 35.726741 : pos.coords.latitude,
-                            longitude: usingTestData ? 139.709531 : pos.coords.longitude,
+                            /* テストデータでは御堂筋線中津-梅田間のデータを使用 */
+                            latitude: usingTestData ? 34.707973 : pos.coords.latitude,
+                            longitude: usingTestData ? 135.496555 : pos.coords.longitude,
                         }),
                     });
 
