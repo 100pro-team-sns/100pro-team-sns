@@ -8,6 +8,7 @@ import {useNavigate} from "react-router";
 import socket from "./socket.ts";
 import {useEffect, useState} from "react";
 import Notification from "./entity/Notification.tsx";
+import {fetchEnabledRoomId} from "./api.ts";
 
 type NotificationItem = {
     id: number;
@@ -36,8 +37,8 @@ function Home() {
     useEffect(() => {
         const onMatchCreated = function (args: {
             roomId: number,
-            user1: {id: number, email: string},
-            user2: {id: number, email: string}
+            user1: {id: number},
+            user2: {id: number}
             expiredAt: Date
         }) {
             if (args.user1.id !== userId && args.user2.id !== userId) {
@@ -47,25 +48,39 @@ function Home() {
             addNotification("マッチングに成功しました！タップしてチャットを始めましょう", "/app/chat/" + args.roomId);
         };
 
-        const onSocketCollapsed = function() {
-            addNotification("ログアウトしました", "/login");
+        const onSocketDisconnected = () => {
+            addNotification("サーバーとの通信が失われました。3秒後に再試行し、それでも不通の場合はログアウトします", null);
             setTimeout(() => {
                 socket.connect();
             }, 3000);
         }
 
-        socket.on("match_created", onMatchCreated);
-        socket.on("disconnect", () => {
-            addNotification("サーバーとの通信が失われました。3秒後に再試行し、それでも不通の場合はログアウトします", null);
+        const onSocketCollapsed = function() {
+            addNotification("ログアウトしました", "/login");
             setTimeout(() => {
-                socket.connect();
+                navigate("/login");
             }, 3000);
-        });
+        };
+
+        (async () => {
+            const enabledRoomId = await fetchEnabledRoomId(token);
+            if (enabledRoomId !== null) {
+                localStorage.setItem("enabledRoomId", String(enabledRoomId));
+            } else {
+                localStorage.removeItem("enabledRoomId")
+            }
+        })();
+
+        socket.on("match_created", onMatchCreated);
+        socket.on("disconnect", onSocketDisconnected);
         socket.on("connect_error", onSocketCollapsed);
         socket.on("connect_timeout", onSocketCollapsed);
 
         return () => {
             socket.off("match_created", onMatchCreated);
+            socket.off("disconnect", onSocketDisconnected);
+            socket.off("connect_error", onSocketCollapsed);
+            socket.off("connect_timeout", onSocketCollapsed);
         };
     }, []);
 
@@ -81,6 +96,10 @@ function Home() {
             return;
         }
         navigate("/app/chat/" + roomId);
+    }
+
+    function onChatsButtonClicked(): void {
+        navigate("/app/chats");
     }
 
     if (!socket || userId === null || token === null) {
@@ -103,8 +122,11 @@ function Home() {
             </div>
             <p>ようこそ {userIdString} さん！</p>
             {errorMessage && <p>{errorMessage}</p>}
-            <button onClick={onNewButtonClicked}>新しい会話を始める</button>
-            <button onClick={onChatButtonClicked}>既存の会話を続ける</button>
+            <div className="button-container">
+                <button onClick={onNewButtonClicked}>新しい会話を始める</button>
+                <button onClick={onChatButtonClicked}>既存の会話を続ける</button>
+                <button onClick={onChatsButtonClicked}>過去のチャットを見る</button>
+            </div>
         </div>
     );
 

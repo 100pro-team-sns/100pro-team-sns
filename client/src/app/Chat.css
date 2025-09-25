@@ -4,6 +4,8 @@
   height: 100vh;
   width: min(600px, 100vw);
   background: #f2f2f2;
+  margin: 0;
+  padding: 0;
 }
 
 .chat-messages {

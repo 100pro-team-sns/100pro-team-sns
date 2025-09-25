@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { User, Room, Chat } = require('../models');
+const {Op, literal} = require("sequelize");
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -96,51 +97,6 @@ module.exports = (io) => {
     }
   });
 
-  router.post('/match', async (req, res) => {
-    try {
-      const { user_id_1, user_id_2, duration_hours = 24 } = req.body;
-
-      if (!user_id_1 || !user_id_2) {
-        return res.status(400).json({ error: 'Both user IDs are required' });
-      }
-
-      const user1 = await User.findByPk(user_id_1);
-      const user2 = await User.findByPk(user_id_2);
-
-      if (!user1 || !user2) {
-        return res.status(404).json({ error: 'One or both users not found' });
-      }
-
-      const expiredAt = new Date(Date.now() + duration_hours * 60 * 60 * 1000);
-      
-      const room = await Room.create({
-        user_id_1,
-        user_id_2,
-        expired_at: expiredAt
-      });
-
-      io.emit('match_created', {
-        roomId: room.id,
-        user1: { id: user1.id, email: user1.email },
-        user2: { id: user2.id, email: user2.email },
-        expiredAt
-      });
-
-      res.status(201).json({
-        message: 'Match created successfully',
-        room: {
-          id: room.id,
-          user_id_1: room.user_id_1,
-          user_id_2: room.user_id_2,
-          expired_at: room.expired_at
-        }
-      });
-    } catch (error) {
-      console.error('Match creation error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
   router.post('/match/stop', authenticateToken, async (req, res) => {
     try {
       const { roomId } = req.body;
@@ -153,7 +109,7 @@ module.exports = (io) => {
       const room = await Room.findOne({
         where: {
           id: roomId,
-          expired_at: { [require('sequelize').Op.gt]: new Date() }
+          expired_at: { [Op.gt]: new Date() }
         }
       });
 
@@ -212,27 +168,71 @@ module.exports = (io) => {
 
   router.post('/train/join', authenticateToken, async (req, res) => {
     try {
-      const { train_id } = req.body;
+      const {section_id, duration_hours = 24} = req.body;
       const userId = req.user.userId;
 
-      if (!train_id) {
+      if (!section_id) {
         return res.status(400).json({ error: 'train_id is required' });
       }
 
-      const expiredAt = new Date(Date.now() + 3 * 60 * 60 * 1000); // 3 hours from now
+      const sectionIdExpiredAt = new Date(Date.now() + 3 * 60 * 60 * 1000); // 3 hours from now
 
       await User.update(
         {
-          section_id: train_id,
-          section_id_expired_at: expiredAt
+          section_id: section_id,
+          section_id_expired_at: sectionIdExpiredAt
         },
         { where: { id: userId } }
       );
 
+      // finding other user
+      const userMatchingTo = await User.findOne({
+        where: {
+          [Op.and]: [
+            {id: {[Op.ne]: userId}}, // other user must not be himself
+            {section_id: section_id}, // other user must be in same section
+            {section_id_expired_at: {[Op.gt]: literal('NOW()')}}, // section of other user must not be expired
+            { // other user must not have already joining in a room
+              id: {
+                [Op.notIn]: literal(`(
+                  SELECT user_id_1 FROM rooms WHERE expired_at > NOW()
+                  UNION
+                  SELECT user_id_2 FROM rooms WHERE expired_at > NOW()
+                )`)
+              }
+            }
+          ]
+        }
+      });
+
+      if (userMatchingTo === null) {
+        res.status(200).json({
+          message: 'Successfully joined train',
+          section_id,
+          expired_at: sectionIdExpiredAt
+        });
+        return;
+      }
+
+      const roomExpiredAt = new Date(Date.now() + duration_hours * 60 * 60 * 1000);
+
+      const room = await Room.create({
+        user_id_1: userId,
+        user_id_2: userMatchingTo.id,
+        expired_at: roomExpiredAt
+      });
+
+      io.emit('match_created', {
+        roomId: room.id,
+        user1: {id: userId},
+        user2: {id: userMatchingTo.id},
+        roomExpiredAt
+      });
+
       res.status(200).json({
-        message: 'Successfully joined train',
-        train_id,
-        expired_at: expiredAt
+        message: 'Successfully joined train and a room created',
+        section_id,
+        expired_at: sectionIdExpiredAt
       });
     } catch (error) {
       console.error('Train join error:', error);
@@ -293,15 +293,13 @@ module.exports = (io) => {
           attributes: ['context', 'created_at']
         });
 
-        const otherUser = room.user_id_1 === userId
-          ? { id: room.user_id_2, email: room.user2?.email }
-          : { id: room.user_id_1, email: room.user1?.email };
+        const otherUserId = room.user_id_1 === userId ? room.user_id_2 : room.user_id_1
 
         const isExpired = new Date() > new Date(room.expired_at);
 
         return {
           roomId: room.id,
-          otherUser,
+          otherUserId,
           isExpired,
           lastMessage: lastMessage ? {
             context: lastMessage.context,
