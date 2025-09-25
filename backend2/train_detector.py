@@ -9,62 +9,42 @@ class TrainDetector:
     def __init__(self):
         self.train_lines = self._load_train_data()
         self.speed_threshold = 10.0
-        self.max_distance_from_line = 1
+        self.max_distance_from_line = 1.0
     
     def _load_train_data(self):
         train_lines = {
-            "yamanote": {
-                "name": "山手線",
+            "midosuji": {
+                "name": "御堂筋線",
                 "stations": [
-                    {"name": "東京", "lat": 35.681382, "lon": 139.766084},
-                    {"name": "有楽町", "lat": 35.675069, "lon": 139.763328},
-                    {"name": "新橋", "lat": 35.665498, "lon": 139.758660},
-                    {"name": "浜松町", "lat": 35.655646, "lon": 139.756749},
-                    {"name": "田町", "lat": 35.645736, "lon": 139.747575},
-                    {"name": "品川", "lat": 35.630152, "lon": 139.740413},
-                    {"name": "大崎", "lat": 35.619700, "lon": 139.728439},
-                    {"name": "五反田", "lat": 35.626446, "lon": 139.723822},
-                    {"name": "目黒", "lat": 35.633998, "lon": 139.715829},
-                    {"name": "恵比寿", "lat": 35.645516, "lon": 139.710070},
-                    {"name": "渋谷", "lat": 35.658517, "lon": 139.701334},
-                    {"name": "原宿", "lat": 35.670168, "lon": 139.702687},
-                    {"name": "代々木", "lat": 35.683061, "lon": 139.702042},
-                    {"name": "新宿", "lat": 35.690921, "lon": 139.700258},
-                    {"name": "新大久保", "lat": 35.701306, "lon": 139.700044},
-                    {"name": "高田馬場", "lat": 35.712285, "lon": 139.703782},
-                    {"name": "目白", "lat": 35.721204, "lon": 139.706587},
-                    {"name": "池袋", "lat": 35.729503, "lon": 139.711086},
-                    {"name": "大塚", "lat": 35.731401, "lon": 139.728584},
-                    {"name": "巣鴨", "lat": 35.733492, "lon": 139.739345},
-                    {"name": "駒込", "lat": 35.736489, "lon": 139.746875},
-                    {"name": "田端", "lat": 35.738062, "lon": 139.760329},
-                    {"name": "西日暮里", "lat": 35.732135, "lon": 139.766787},
-                    {"name": "日暮里", "lat": 35.727772, "lon": 139.770987},
-                    {"name": "鶯谷", "lat": 35.720495, "lon": 139.778837},
-                    {"name": "上野", "lat": 35.713768, "lon": 139.777043},
-                    {"name": "御徒町", "lat": 35.707438, "lon": 139.774632},
-                    {"name": "秋葉原", "lat": 35.698683, "lon": 139.774219},
-                    {"name": "神田", "lat": 35.691690, "lon": 139.770883}
-                ]
-            },
-            "chuo": {
-                "name": "中央線快速",
-                "stations": [
-                    {"name": "東京", "lat": 35.681382, "lon": 139.766084},
-                    {"name": "神田", "lat": 35.691690, "lon": 139.770883},
-                    {"name": "御茶ノ水", "lat": 35.699566, "lon": 139.763906},
-                    {"name": "四ツ谷", "lat": 35.686290, "lon": 139.730641},
-                    {"name": "新宿", "lat": 35.690921, "lon": 139.700258},
-                    {"name": "中野", "lat": 35.705378, "lon": 139.665798},
-                    {"name": "高円寺", "lat": 35.705398, "lon": 139.649635},
-                    {"name": "阿佐ヶ谷", "lat": 35.704757, "lon": 139.635790},
-                    {"name": "荻窪", "lat": 35.704438, "lon": 139.619981},
-                    {"name": "西荻窪", "lat": 35.703627, "lon": 139.599614},
-                    {"name": "吉祥寺", "lat": 35.703122, "lon": 139.579783},
-                    {"name": "三鷹", "lat": 35.702739, "lon": 139.560566}
-                ]
+                    {"name": "なかもず", "lat": 34.556697, "lon": 135.503074},
+                    {"name": "新金岡", "lat": 34.567780, "lon": 135.515000},
+                    {"name": "北花田", "lat": 34.582500, "lon": 135.516390},
+                    {"name": "あびこ", "lat": 34.609930, "lon": 135.516434},
+                    {"name": "長居", "lat": 34.609542, "lon": 135.513714},
+                    {"name": "西田辺", "lat": 34.621625, "lon": 135.515150},
+                    {"name": "昭和町", "lat": 34.638297, "lon": 135.519226},
+                    {"name": "天王寺", "lat": 34.646553, "lon": 135.513761},
+                    {"name": "動物園前", "lat": 34.648814, "lon": 135.504411},
+                    {"name": "大国町", "lat": 34.655539, "lon": 135.497950},
+                    {"name": "なんば", "lat": 34.666756, "lon": 135.501644},
+                    {"name": "心斎橋", "lat": 34.672594, "lon": 135.501297},
+                    {"name": "本町", "lat": 34.681936, "lon": 135.498983},
+                    {"name": "淀屋橋", "lat": 34.692350, "lon": 135.500994},
+                    {"name": "梅田", "lat": 34.702833, "lon": 135.497722},
+                    {"name": "中津", "lat": 34.709756, "lon": 135.497650},
+                    {"name": "西中島南方", "lat": 34.726478, "lon": 135.498575},
+                    {"name": "新大阪", "lat": 34.727583, "lon": 135.500822},
+                    {"name": "東三国", "lat": 34.733386, "lon": 135.500458},
+                    {"name": "江坂", "lat": 34.761119, "lon": 135.497931},
+                    {"name": "緑地公園", "lat": 34.777231, "lon": 135.492361},
+                    {"name": "桃山台", "lat": 34.792639, "lon": 135.497389},
+                    {"name": "千里中央", "lat": 34.807449, "lon": 135.495114},
+                    {"name": "箕面船場阪大前", "lat": 34.821110, "lon": 135.490280},
+                    {"name": "箕面萱野", "lat": 34.831670, "lon": 135.489170},
+                ],
             }
         }
+
         return train_lines
     
     def _calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -157,13 +137,11 @@ class TrainDetector:
     def detect_train(self, latitude: float, longitude: float,
                     speed: Optional[float] = None,
                     direction: Optional[float] = None) -> Tuple[Optional[str], Optional[str]]:
-        
-        if speed and speed < self.speed_threshold:
-            logger.info(f"Speed {speed} km/h is below threshold {self.speed_threshold} km/h")
-            return None, None
-        
+
+        # 速度条件を撤廃 - 停車中や低速でも判定する
+
         nearest_line, distance = self._find_nearest_line(latitude, longitude)
-        
+
         if distance > self.max_distance_from_line:
             logger.info(f"Distance {distance:.4f} km from nearest line exceeds threshold")
             return None, None
