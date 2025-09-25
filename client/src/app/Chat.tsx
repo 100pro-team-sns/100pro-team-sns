@@ -126,11 +126,13 @@ function Chat() {
                 addMessage(args.message, args.userId === userId ? "me" : "other");
             }
 
-            const onMatchStopped = function (args: {
-                roomId: number,
-                stoppedBy: number,
-                message: string
-            }) {
+            const onMatchStopped = function (
+                // args: {
+                //     roomId: number,
+                //     stoppedBy: number,
+                //     message: string
+                // }
+            ) {
                 navigate("/app/home", {
                     state: {
                         errorMessage: "相手方によりマッチングが中止されました"
