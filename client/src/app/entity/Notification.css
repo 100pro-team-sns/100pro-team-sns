@@ -1,0 +1,22 @@
+.notification {
+    background-color: #e3e3ed;
+    color: #2a2e30;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    font-size: 16px;
+    margin-bottom: 10px; /* 通知同士の間隔 */
+    animation: slideDown 0.5s ease forwards;
+    opacity: 0;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

@@ -1,0 +1,50 @@
+
+.logo * {
+  text-align: center;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-variation-settings:
+          "wdth" 100;
+}
+
+#pole {
+  font-weight: 700;
+  font-size: 42px;
+  height: 35px;
+  margin: 4px;
+  color: #121030;
+  letter-spacing: 3px;
+}
+
+#chat {
+  color: #30317b;
+}
+
+#pole::before,
+#pole::after {
+  background-color: #1e90ff;
+  content: "";
+  height: 5px;
+  width: 60px;
+}
+
+#pole::before {
+  margin-right: 15px;
+}
+
+#pole::after {
+  margin-left: 15px;
+}
+
+#subtitle {
+  font-weight: 700;
+  font-size: 18px;
+  height: 20px;
+  margin: 5px;
+  color: #646464;
+}
+
+#loginButton {
+  margin: 10px;
+}
