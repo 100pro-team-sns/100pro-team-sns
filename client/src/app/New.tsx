@@ -93,7 +93,7 @@ function New() {
             return;
         }
 
-        const usingTestData = import.meta.env.VITE_IS_DEVELOPMENT == true;
+        const usingTestData = import.meta.env.VITE_IS_DEVELOPMENT == "true";
 
         navigator.geolocation.getCurrentPosition(
             async (pos) => {

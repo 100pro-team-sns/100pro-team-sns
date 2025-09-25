@@ -53,11 +53,16 @@ async def set_location(location_data: LocationData):
                 line=line,
                 section_id=section_id
             )
+            queue_header = {
+                "Authorization": "Bearer " + location_data.token,
+                "Content-Type": "application/json",
+            }
             
             try:
                 response = requests.post(
-                    f"{server1_url}/api/queue/add",
-                    json=queue_data.dict()
+                    f"{server1_url}/api/train/join",
+                    headers=queue_header,
+                    json=queue_data.dict(),
                 )
                 response.raise_for_status()
                 logger.info(f"User {user.id} added to queue for line {line}, section {section_id}")

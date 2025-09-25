@@ -9,7 +9,7 @@ class TrainDetector:
     def __init__(self):
         self.train_lines = self._load_train_data()
         self.speed_threshold = 10.0
-        self.max_distance_from_line = 0.001
+        self.max_distance_from_line = 1
     
     def _load_train_data(self):
         train_lines = {
