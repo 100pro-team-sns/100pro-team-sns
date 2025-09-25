@@ -52,7 +52,7 @@ function Register() {
             socket.on("error", handleError);
 
             navigate("/app/home");
-        } catch (err: unknown) {
+        } catch (err: any) {
             setError(err.message);
         }
     };
