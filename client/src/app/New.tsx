@@ -103,9 +103,9 @@ function New() {
                         },
                         body: JSON.stringify({
                             token: token,
-                            /* テストデータでは御堂筋線中津-梅田間のデータを使用 */
-                            latitude: usingTestData ? 34.707973 : pos.coords.latitude,
-                            longitude: usingTestData ? 135.496555 : pos.coords.longitude,
+                            /* テストデータでは御堂筋線大国町-動物園前間のデータを使用 */
+                            latitude: usingTestData ? 34.652734 : pos.coords.latitude,
+                            longitude: usingTestData ? 135.497742 : pos.coords.longitude,
                         }),
                     });
 
